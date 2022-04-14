@@ -1,6 +1,6 @@
 import {combineReducers} from 'redux';
-import {DataReducer} from './data/reducer';
+import {OrderBookReducer} from './orderBook/reducer';
 
 export default combineReducers({
-  data: DataReducer,
+  orderBook: OrderBookReducer,
 });

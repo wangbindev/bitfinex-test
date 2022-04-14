@@ -1,5 +1,5 @@
 
 
 export interface IStore {
-  dataReducer: any;
+  orderBook: any;
 }

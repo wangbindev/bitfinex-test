@@ -1,5 +1,9 @@
-export const getChannelSubscriptionRequest = (channel: string) => ({
-    event: 'subscribe',
-    channel: 'book',
-    symbol: 'tBTCUSD',
-  });
+interface IRequest {
+  channel: string;
+  symbol: string;
+}
+export const getSubscriptionRequest = ({ channel, symbol }: IRequest) => ({
+  event: "subscribe",
+  channel,
+  symbol,
+});

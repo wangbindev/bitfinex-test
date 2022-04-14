@@ -9,7 +9,7 @@ interface IListItem {
     data: any[];
     type: string;
 }
-export const ListItem = ({type, data, index }: IListItem) => {
+export const ListItem = ({ type, data, index }: IListItem) => {
     const [bgColor, setBgColor] = useState<string | undefined>(undefined);
     const amount: any = Math.abs(data[2]);
     const prevAmount = usePrevious(amount);
@@ -45,9 +45,9 @@ export const ListItem = ({type, data, index }: IListItem) => {
             ]}
         >
             <Text style={styles.text}>
-                {data[0]}
+                {type == 'bids' ? amount : data[0]}
             </Text>
-            <Text  style={styles.text}>{data[2]}</Text>
+            <Text style={styles.text}>{type == 'bids' ? data[0] : amount}</Text>
         </View>
     );
 };
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 5,
     },
-    text:{
-        color:COLORS.text
+    text: {
+        color: COLORS.text
     }
 });

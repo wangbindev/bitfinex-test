@@ -1,24 +1,30 @@
 import { useEffect, useState } from "react";
-import { getChannelSubscriptionRequest } from "../utils";
+import { useDispatch, useSelector } from "react-redux";
+import { updateOrderBook } from "../data/store/orderBook/actions";
+import { IStore } from "../models";
+import { getSubscriptionRequest } from "../utils";
 
 export const useOrderBook = (url: string) => {
-  const [info, setOrderBook] = useState<any>({ bids: [], asks: [] });
+  const [channel, setChannel] = useState<string>("book");
+  const [symbol, setSymbol] = useState<string>("tBTCUSD");
 
+  const id = `${channel}-${symbol}`;
+  const info = useSelector((store: IStore) => store.orderBook[id]);
+  const dispatch = useDispatch();
+  let BOOK: any = { bids: {}, asks: {} };
   useEffect(() => {
     let isMounted = true;
     let connected = false;
-    let BOOK: any = {};
     const ws = new WebSocket(url);
     const addSubscription = () => {
       if (isMounted && !connected) {
         ws.onopen = () => {
-          console.log("[onopen]");
           connected = true;
           BOOK.bids = {};
           BOOK.asks = {};
           BOOK.psnap = {};
           BOOK.mcnt = 0;
-          ws.send(JSON.stringify(getChannelSubscriptionRequest("")));
+          ws.send(JSON.stringify(getSubscriptionRequest({ channel, symbol })));
         };
         ws.onmessage = (event) => {
           let data = JSON.parse(event.data);
@@ -56,15 +62,7 @@ export const useOrderBook = (url: string) => {
             } else {
               console.log(data);
             }
-            const compareItem = (a: any, b: any) => {
-              return   parseFloat(b[0])-parseFloat(a[0]);
-            };
-            const bids = Object.values(BOOK.bids).sort(compareItem);
-            const asks = Object.values(BOOK.asks).sort(compareItem);
-            setOrderBook({ bids, asks });
-          } catch (error) {
-            console.log("try-catch", error);
-          }
+          } catch (error) {}
         };
         ws.onerror = () => {
           /*
@@ -72,7 +70,6 @@ export const useOrderBook = (url: string) => {
           */
         };
         ws.onclose = () => {
-          console.log("[onclose]");
           connected = false;
         };
       }
@@ -82,9 +79,41 @@ export const useOrderBook = (url: string) => {
       isMounted = false;
       connected && ws.close();
     };
-  }, [url]);
+  }, [url, symbol, channel]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const interval = setInterval(() => {
+      if (isMounted) {
+        const compareItem = (a: any, b: any) => {
+          return parseFloat(b[0]) - parseFloat(a[0]);
+        };
+        const bids = Object.values(BOOK.bids).sort(compareItem);
+        const asks = Object.values(BOOK.asks).sort(compareItem);
+        dispatch(
+          updateOrderBook({
+            data: {
+              bids,
+              asks,
+            },
+            symbol,
+            channel,
+          })
+        );
+      }
+    }, 1000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [symbol, channel]);
 
   return {
-    info,
+    info: {
+      bids: info?.bids || [],
+      asks: info?.asks || [],
+    },
+    channel,
+    symbol,
   };
 };

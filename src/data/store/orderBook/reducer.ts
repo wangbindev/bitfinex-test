@@ -6,11 +6,12 @@ const INITIAL_STATE = Immutable({
 
 });
 
-export const DataReducer = (state = INITIAL_STATE, action: AnyAction) => {
+export const OrderBookReducer = (state = INITIAL_STATE, action: AnyAction) => {
   switch (action.type) {
     case ActionTypes.UPDATE_DATA:
       return {
         ...state,
+        [action.id]:action.data
       };
     default:
       return state;
